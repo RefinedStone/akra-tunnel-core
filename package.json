@@ -1,0 +1,37 @@
+{
+  "name": "akra-tunnel-core",
+  "version": "0.1.1",
+  "description": "Host-independent Akra Tunnel text chat and page kit",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    "./chat": {
+      "types": "./chat.d.ts",
+      "default": "./chat.mjs"
+    },
+    "./legacy": "./legacy/index.mjs"
+  },
+  "files": [
+    "chat.d.ts",
+    "chat.mjs",
+    "chat-dom.mjs",
+    "host-lease.mjs",
+    "legacy/continuation-cloud-snapshot.mjs",
+    "legacy/continuation-cloud-state.mjs",
+    "legacy/continuation-discovery-dom.mjs",
+    "legacy/continuation-discovery-network.mjs",
+    "legacy/continuation-dom.mjs",
+    "legacy/continuation-host.mjs",
+    "legacy/continuation-input.mjs",
+    "legacy/continuation-push.mjs",
+    "legacy/index.mjs",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "verify": "npm test"
+  }
+}
