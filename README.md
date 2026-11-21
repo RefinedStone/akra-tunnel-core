@@ -12,10 +12,17 @@ Recovery loads the same conversation URL at most `maxResumes` times, persisted p
 
 The `legacy` entry is the private launcher's continuation integration. It does not register any local machine tools. Text jobs should use the `chat` entry only. The launcher must supply its own synchronous `runtime.usedTunnelApp(conversation, appIds)` classifier. The host passes parsed conversation data to the classifier locally and uses its boolean result for enrollment.
 
+`akra-tunnel-core/tunnel` exports `TunnelRuntimeService`. Pass a local `manifestPath`,
+the expected `schemaVersion`, and `artifacts`, which maps each required top-level SHA-256
+field in the manifest to a local artifact path. `await service.getStatus()` returns
+`{ state: "ready" }` when the schema and all hashes match, `{ state: "missing" }`
+when the manifest is absent, or `{ state: "invalid" }` otherwise. The check reads
+the configured files and does not start the runtime.
+
 Install the release from Git and commit the resolved lockfile:
 
 ```sh
-npm install "git+https://github.com/RefinedStone/akra-tunnel-core.git#v0.1.1"
+npm install "git+https://github.com/RefinedStone/akra-tunnel-core.git#v0.1.2"
 ```
 
-For an immutable dependency specifier, replace `v0.1.1` with the full commit SHA resolved by the tag. For a portable tarball, run `npm pack --ignore-scripts` in a checkout of that commit and install the tarball by its repository-relative path.
+For an immutable dependency specifier, replace `v0.1.2` with the full commit SHA resolved by the tag. For a portable tarball, run `npm pack --ignore-scripts` in a checkout of that commit and install the tarball by its repository-relative path.
