@@ -132,3 +132,25 @@ test("shipped JavaScript imports no Electron and npm installs no browser or nati
   }
   await import("../legacy/index.mjs");
 });
+
+test("busy frontend reads snapshots without browser access or mutation", async t => {
+  const f = await harness(t);
+  const owner = f.make(f.lease);
+  const busy = new ChatSessionService({home:f.home, lease:await acquireHostLease(f.home),
+    pageFor() { assert.fail("busy client must not access a page"); }});
+  assert.deepEqual(busy.status(), {host:false,reason:"chat_host_busy"});
+  assert.equal(await busy.observe("absent"), null);
+  assert.equal(await busy.readResult("absent"), null);
+  const submitted = await owner.submit(request);
+  assert.deepEqual(await busy.observe("job"), submitted);
+  await assert.rejects(busy.submit(request), /CHAT_HOST_BUSY/);
+  await assert.rejects(busy.stop("job"), /CHAT_HOST_BUSY/);
+  f.sample({phase:"complete", markerObserved:true, result:"answer", chatUrl:conversation});
+  assert.equal(await busy.readResult("job"), null);
+  const done = await owner.observe("job");
+  assert.deepEqual(await busy.observe("job"), done);
+  assert.equal(await busy.readResult("job"), "answer");
+  assert.equal(f.clicks, 1);
+  assert.deepEqual(f.loads, ["https://chatgpt.com/"]);
+  await f.lease.release();
+});
