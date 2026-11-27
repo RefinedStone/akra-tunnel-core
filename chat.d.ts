@@ -55,6 +55,7 @@ export class ChatSessionService {
   });
   status(): { host: boolean; reason?: "chat_host_busy" };
   submit(request: ChatRequest): Promise<ChatObservation>;
+  /** Non-owners read only the last persisted observation; only the owner polls or recovers the page. */
   observe(requestId: string): Promise<ChatObservation | null>;
   readResult(requestId: string): Promise<string | null>;
   stop(requestId: string): Promise<ChatObservation | null>;

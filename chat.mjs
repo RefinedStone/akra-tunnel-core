@@ -34,6 +34,25 @@ export class ChatSessionService {
     return this.#state?.active ? { host: true } : { host: false, reason: "chat_host_busy" };
   }
 
+  // A non-owner may read the last atomic snapshot, never drive a page,
+  // settle an uncertain send, or create files on behalf of the owner.
+  async #readSnapshot(id) {
+    checkId(id);
+    const home = await realpath(this.#home).catch(error => {
+      if (error.code === "ENOENT") return null;
+      throw error;
+    });
+    if (home === null) return null;
+    if (this.#state && home !== this.#state.home) throw new Error("CHAT_HOST_HOME_MISMATCH");
+    const record = await readFile(path.join(home, "chat-jobs-v1", digest(id) + ".json"), "utf8")
+      .then(JSON.parse, error => {
+        if (error.code === "ENOENT") return null;
+        throw error;
+      });
+    if (record && record.requestId !== id) throw new Error("CHAT_RECORD_INVALID");
+    return record;
+  }
+
   #run(id, operation) {
     checkId(id);
     const state = this.#state;
@@ -177,6 +196,8 @@ export class ChatSessionService {
   }
 
   observe(requestId) {
+    if (!this.#state?.active) return this.#readSnapshot(requestId).then(record =>
+      record ? publicObservation(record) : null);
     return this.#run(requestId, async (record, save) => {
       if (!record) return null;
       await this.#settleUncertain(record, save);
@@ -191,7 +212,7 @@ export class ChatSessionService {
   }
 
   readResult(requestId) {
-    return this.#run(requestId, record => record?.phase === "complete" ? record.result ?? null : null);
+    return this.#readSnapshot(requestId).then(record => record?.phase === "complete" ? record.result ?? null : null);
   }
 
   stop(requestId) {
