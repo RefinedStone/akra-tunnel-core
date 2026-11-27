@@ -212,7 +212,9 @@ export class ChatSessionService {
   }
 
   readResult(requestId) {
-    return this.#readSnapshot(requestId).then(record => record?.phase === "complete" ? record.result ?? null : null);
+    const result = record => record?.phase === "complete" ? record.result ?? null : null;
+    if (!this.#state?.active) return this.#readSnapshot(requestId).then(result);
+    return this.#run(requestId, result);
   }
 
   stop(requestId) {
