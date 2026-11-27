@@ -38,6 +38,10 @@
   ],
   "scripts": {
     "test": "node --test",
-    "verify": "npm test"
+    "verify": "npm run typecheck && npm test",
+    "typecheck": "tsc --strict --noEmit --target ES2022 --module NodeNext --moduleResolution NodeNext chat.d.ts tunnel.d.ts"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
   }
 }
